@@ -34,9 +34,19 @@ async function run() {
     app.get("/allpost", async(req, res)=>{
         const page = parseInt(req.query.page);
         const size = parseInt(req.query.size);
+        const category = req.query.category;
+        const filtertitle = req.query.title;
+        var categoryfilter ;
+        if(!(category === 'All')){
+            categoryfilter = {category: category}
+        }
+        if(!(filtertitle === '')){
+            categoryfilter = {title:  filtertitle}
+        }
+        
         const skip = (page-1)*size;
-        console.log(page, size);
-        const result = await blogpostcollection.find()
+        console.log(req.query.title);
+        const result = await blogpostcollection.find(categoryfilter)
         .skip(skip)
         .limit(size)
         .toArray()

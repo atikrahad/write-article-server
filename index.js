@@ -26,10 +26,27 @@ async function run() {
 
     const blogpostcollection = client.db("blogpostDB").collection("blogpost");
 
+    app.get("/postcount", async (req, res) => {
+      const count = await blogpostcollection.estimatedDocumentCount();
+      res.send({count});
+    });
+
+    app.get("/allpost", async(req, res)=>{
+        const page = parseInt(req.query.page);
+        const size = parseInt(req.query.size);
+        const skip = (page-1)*size;
+        console.log(page, size);
+        const result = await blogpostcollection.find()
+        .skip(skip)
+        .limit(size)
+        .toArray()
+        res.send(result)
+    })
+
     app.post("/blogpost", async (req, res) => {
       const post = req.body;
       const result = await blogpostcollection.insertOne(post);
-      res.send(result)
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection

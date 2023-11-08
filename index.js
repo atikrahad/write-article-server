@@ -46,6 +46,13 @@ async function run() {
         .send({success: true})
     })
 
+    app.get('/comment', async(req, res)=> {
+        const id = req.query.id
+        const filterId = {blogId: id}
+        const result = await commentCollection.find(filterId).toArray();
+        res.send(result);
+    })
+
     app.post('/comment', async(req, res)=>{
         const coment = req.body;
         const result = await commentCollection.insertOne(coment)

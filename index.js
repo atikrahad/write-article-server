@@ -1,19 +1,21 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const jwt = require('jsonwebtoken')
-var cookieParser = require('cookie-parser')
+const jwt = require("jsonwebtoken");
+var cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
-app.use(cors({
-    origin: ['http://localhost:5173'],
-    credentials: true
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.1lk0tsy.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -34,30 +36,31 @@ async function run() {
     const blogpostcollection = client.db("blogpostDB").collection("blogpost");
     const commentCollection = client.db("commentsDB").collection("comments");
 
-    app.post('/jwt', async(req, res)=>{
-        const user = req.body;
-        const result = await jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, { expiresIn: '1h' });
-        res
-        .cookie('token', result, {
-            httpOnly: true,
-            secure: false,
-            
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const result = await jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, {
+        expiresIn: "1h",
+      });
+      res
+        .cookie("token", result, {
+          httpOnly: true,
+          secure: false,
         })
-        .send({success: true})
-    })
+        .send({ success: true });
+    });
 
-    app.get('/comment', async(req, res)=> {
-        const id = req.query.id
-        const filterId = {blogId: id}
-        const result = await commentCollection.find(filterId).toArray();
-        res.send(result);
-    })
+    app.get("/comment", async (req, res) => {
+      const id = req.query.id;
+      const filterId = { blogId: id };
+      const result = await commentCollection.find(filterId).toArray();
+      res.send(result);
+    });
 
-    app.post('/comment', async(req, res)=>{
-        const coment = req.body;
-        const result = await commentCollection.insertOne(coment)
-        res.send(result)
-    })
+    app.post("/comment", async (req, res) => {
+      const coment = req.body;
+      const result = await commentCollection.insertOne(coment);
+      res.send(result);
+    });
 
     app.get("/postcount", async (req, res) => {
       const count = await blogpostcollection.estimatedDocumentCount();
@@ -76,9 +79,9 @@ async function run() {
       if (!(filtertitle === "")) {
         categoryfilter = { title: filtertitle };
       }
-      console.log(req.cookies.token);
+
       const skip = (page - 1) * size;
-      console.log(req.query.title);
+
       const result = await blogpostcollection
         .find(categoryfilter)
         .skip(skip)
@@ -89,7 +92,7 @@ async function run() {
 
     app.get("/allpost/:id", async (req, res) => {
       const id = req.params.id;
-      
+
       const query = { _id: new ObjectId(id) };
       const result = await blogpostcollection.findOne(query);
       res.send({ result });
@@ -99,6 +102,24 @@ async function run() {
       const post = req.body;
       const result = await blogpostcollection.insertOne(post);
       res.send(result);
+    });
+    app.put("/blogpost/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateData = req.body;
+
+      const quairy = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const updateblog = {
+        $set: {
+          title: updateData.title,
+          sort_description: updateData.sort_description,
+          img: updateData.img,
+          category: updateData.category,
+          description: updateData.description,
+        },
+      };
+      const result = await blogpostcollection.updateOne(quairy, updateblog, option )
+      res.send(result)
     });
 
     // Send a ping to confirm a successful connection

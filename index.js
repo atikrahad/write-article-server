@@ -32,6 +32,7 @@ async function run() {
     await client.connect();
 
     const blogpostcollection = client.db("blogpostDB").collection("blogpost");
+    const commentCollection = client.db("commentsDB").collection("comments");
 
     app.post('/jwt', async(req, res)=>{
         const user = req.body;
@@ -43,6 +44,12 @@ async function run() {
             
         })
         .send({success: true})
+    })
+
+    app.post('/comment', async(req, res)=>{
+        const coment = req.body;
+        const result = await commentCollection.insertOne(coment)
+        res.send(result)
     })
 
     app.get("/postcount", async (req, res) => {

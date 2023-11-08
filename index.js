@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -28,30 +28,38 @@ async function run() {
 
     app.get("/postcount", async (req, res) => {
       const count = await blogpostcollection.estimatedDocumentCount();
-      res.send({count});
+      res.send({ count });
     });
 
-    app.get("/allpost", async(req, res)=>{
-        const page = parseInt(req.query.page);
-        const size = parseInt(req.query.size);
-        const category = req.query.category;
-        const filtertitle = req.query.title;
-        var categoryfilter ;
-        if(!(category === 'All')){
-            categoryfilter = {category: category}
-        }
-        if(!(filtertitle === '')){
-            categoryfilter = {title:  filtertitle}
-        }
-        
-        const skip = (page-1)*size;
-        console.log(req.query.title);
-        const result = await blogpostcollection.find(categoryfilter)
+    app.get("/allpost", async (req, res) => {
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      const category = req.query.category;
+      const filtertitle = req.query.title;
+      var categoryfilter;
+      if (!(category === "All")) {
+        categoryfilter = { category: category };
+      }
+      if (!(filtertitle === "")) {
+        categoryfilter = { title: filtertitle };
+      }
+
+      const skip = (page - 1) * size;
+      console.log(req.query.title);
+      const result = await blogpostcollection
+        .find(categoryfilter)
         .skip(skip)
         .limit(size)
-        .toArray()
-        res.send(result)
-    })
+        .toArray();
+      res.send(result);
+    });
+
+    app.get("/allpost/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogpostcollection.findOne(query);
+      res.send({ result });
+    });
 
     app.post("/blogpost", async (req, res) => {
       const post = req.body;

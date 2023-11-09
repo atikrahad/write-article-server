@@ -35,6 +35,7 @@ async function run() {
 
     const blogpostcollection = client.db("blogpostDB").collection("blogpost");
     const commentCollection = client.db("commentsDB").collection("comments");
+    const wiahListCollection = client.db("wishlistDB").collection("wishlist");
 
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -98,6 +99,24 @@ async function run() {
       res.send({ result });
     });
 
+    app.get("/wishlist", async (req, res) => {
+      const result = await wiahListCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/wishlist", async (req, res) => {
+      const wish = req.body;
+      const result = await wiahListCollection.insertOne(wish);
+      res.send(result);
+    });
+
+    app.delete("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const deleteone = {_id: id };
+      const result = await wiahListCollection.deleteOne(deleteone);
+      res.send(result);
+    });
+
     app.post("/blogpost", async (req, res) => {
       const post = req.body;
       const result = await blogpostcollection.insertOne(post);
@@ -118,8 +137,12 @@ async function run() {
           description: updateData.description,
         },
       };
-      const result = await blogpostcollection.updateOne(quairy, updateblog, option )
-      res.send(result)
+      const result = await blogpostcollection.updateOne(
+        quairy,
+        updateblog,
+        option
+      );
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection

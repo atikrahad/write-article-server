@@ -91,6 +91,30 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/feautured", async (req, res) => {
+      const quairy = [
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            pic: 1,
+            name: 1,
+            descriptionLength: { $strLenCP: "$description" },
+          },
+        },
+        {
+          $sort: { descriptionLength: -1 },
+        },
+        {
+          $limit: 10,
+        },
+        
+      ];
+
+      const result = await blogpostcollection.aggregate(quairy).toArray();
+      res.send(result);
+    });
+
     app.get("/allpost/:id", async (req, res) => {
       const id = req.params.id;
 
@@ -112,7 +136,7 @@ async function run() {
 
     app.delete("/wishlist/:id", async (req, res) => {
       const id = req.params.id;
-      const deleteone = {_id: id };
+      const deleteone = { _id: id };
       const result = await wiahListCollection.deleteOne(deleteone);
       res.send(result);
     });

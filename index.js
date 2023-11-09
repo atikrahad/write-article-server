@@ -68,6 +68,23 @@ async function run() {
       res.send({ count });
     });
 
+    app.get("/recentpost",async (req, res) => {
+      const quairy = [
+        
+        {
+          $sort: { currentdate: -1 }, 
+        },
+        {
+          $limit: 6, 
+        },
+      ];
+
+      const result = await blogpostcollection.aggregate(quairy).toArray()
+
+      res.send(result)
+
+    });
+
     app.get("/allpost", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
@@ -108,7 +125,6 @@ async function run() {
         {
           $limit: 10,
         },
-        
       ];
 
       const result = await blogpostcollection.aggregate(quairy).toArray();
